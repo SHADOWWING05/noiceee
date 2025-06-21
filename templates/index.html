@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat with Gemini</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #output {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            white-space: pre-line;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎙️ Talk to Gemini</h2>
+    <button onclick="startRecording()">Start Talking</button>
+    <div id="status">Ready to record...</div>
+    <div id="output">Your transcript and Gemini's reply will appear here...</div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let stream;
+
+        async function startRecording() {
+            document.getElementById("status").innerText = "🎤 Recording...";
+
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+            mediaRecorder.onstop = async () => {
+                document.getElementById("status").innerText = "⏳ Processing audio...";
+
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+
+                try {
+                    const res = await fetch('/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await res.json();
+                    if (data.transcript && data.reply) {
+                        document.getElementById("output").innerText =
+                            `🗣️ You said: ${data.transcript}\n🤖 Gemini says: ${data.reply}`;
+                        document.getElementById("status").innerText = "✅ Done! Starting new recording...";
+                        setTimeout(startRecording, 1000); // Auto restart after short delay
+                    } else {
+                        document.getElementById("output").innerText = "❌ Error: " + (data.error || "Unknown error.");
+                        document.getElementById("status").innerText = "⚠️ Failed to process audio.";
+                    }
+                } catch (error) {
+                    document.getElementById("output").innerText = "❌ Error occurred: " + error.message;
+                    document.getElementById("status").innerText = "⚠️ Failed to process audio.";
+                }
+
+                audioChunks = [];
+            };
+
+            audioChunks = [];
+            mediaRecorder.start();
+            setTimeout(() => {
+                mediaRecorder.stop();
+                document.getElementById("status").innerText = "🛑 Stopped recording...";
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
