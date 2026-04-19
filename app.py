@@ -11,12 +11,12 @@ load_dotenv()
 app = Flask(__name__)
 
 # === CONFIG ===
-GOOGLE_API_KEY = "AIzaSyBBGpIDxjhGm_kmd1-t40BLb9RXyBUcQ5M" 
-ASSEMBLYAI_API_KEY ="74dc644d47c24c70802b1c0c0fa7a8d4" 
+GOOGLE_API_KEY = "Heehe NOOb" 
+ASSEMBLYAI_API_KEY ="NOPE" 
 
-LIVEKIT_API_KEY = "APIXhjc36VzyufX"
+LIVEKIT_API_KEY = "YOU NOOB"
 LIVEKIT_API_SECRET = "y0upP1Lt6sAJJ3lVSM1hjBbfVXPUibeFHJgiWzndM1e"
-LIVEKIT_URL = os.getenv("LIVEKIT_URL", "wss://your-livekit-domain/livekit")
+LIVEKIT_URL = os.getenv("chl saale")
 
 # === Configure Gemini ===
 genai.configure(api_key=GOOGLE_API_KEY)
